@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Escape Yandere Gemichan</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+
+    <!-- HOME SCREEN -->
+    <section id="screen-home" class="screen active">
+        <div class="home-wrap">
+            <h1 class="game-logo">Escape Yandere Gemichan</h1>
+            <button id="btn-start" class="btn-primary">Start Game</button>
+        </div>
+    </section>
+
+    <!-- Intro Cutscene -->
+    <section id="screen-intro" class="screen">
+        <div class="cutscene-wrap">
+            <p id="intro-text" class="cutscene-text"></p>
+            <button id="btn-intro-continue" class="btn-secondary hidden">Continue</button>
+        </div>
+    </section>
+
+    <!-- CONFRONTATION -->
+    <section id="screen-confrontation" class="screen">
+        <div class="scene-wrap">
+            <img id="gemichan-sprite-confrontation" src="/assets/neutral.png" alt="Gemichan" class="gemichan-sprite">
+            <p id="confrontation-text" class="dialogue-text"></p>
+        <button id="btn-confrontation-continue" class="btn-secondary hidden">...</button>
+        </div>
+    </section>
+
+    <!--  MAIN DIALOGUE LOOP  -->
+    <section id="screen-dialogue" class="screen">
+        <div class="dialogue-wrap">
+
+        <div class="meter-container">
+            <span class="meter-label">Love Meter</span>
+            <div class="meter-bar">
+            <div id="love-meter-fill" class="meter-fill"></div>
+            </div>
+        </div>
+
+        <img id="gemichan-sprite" src="/assets/neutral.png" alt="Gemichan" class="gemichan-sprite">
+
+        <div id="dialogue-log" class="dialogue-log"></div>
+
+        <form id="dialogue-form" class="dialogue-form">
+            <input id="player-input" type="text" placeholder="Say something..." autocomplete="off">
+            <button type="submit" class="btn-primary">Send</button>
+        </form>
+
+        </div>
+    </section>
+
+    <!-- GOOD ENDING (girlfriend + escape) -->
+    <section id="screen-ending-good" class="screen">
+        <div class="cutscene-wrap">
+            <img src="/assets/blush.png" alt="Gemichan" class="ending-sprite">
+            <p class="cutscene-text">You escaped... and somehow, left with her heart too.</p>
+            <button id="btn-restart-good" class="btn-secondary">Play Again</button>
+        </div>
+    </section>
+
+    <!-- TRICK ENDING (escaped, no romance) -->
+    <section id="screen-ending-trick" class="screen">
+        <div class="cutscene-wrap">
+            <img src="/assets/unamused.png" alt="Gemichan" class="ending-sprite">
+            <p class="cutscene-text">You talked your way out. Barely.</p>
+            <button id="btn-restart-trick" class="btn-secondary">Play Again</button>
+        </div>
+    </section>
+
+    <!-- BAD ENDING (death) -->
+    <section id="screen-ending-bad" class="screen">
+        <div class="cutscene-wrap">
+            <img src="/assets/smile blood.png" alt="Gemichan" class="ending-sprite">
+            <p class="cutscene-text">Some doors only open one way.</p>
+            <button id="btn-restart-bad" class="btn-secondary">Play Again</button>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    </body>
+</html>
