@@ -1,10 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
-const express = require('express');
-
-const app = express();
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+require('dotenv').config();
 
 // Models to try in order — different generations have separate quotas
 const GEMINI_MODELS = [
@@ -93,17 +88,21 @@ async function tryGeminiCall(model, prompt) {
   return data.candidates[0].content.parts[0].text;
 }
 
-app.post('/api/chat', async (req, res) => {
+module.exports = async (req, res) => {
+  // Only allow POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const { message, loveMeter, history } = req.body;
   const moodInfo = getMoodInfo(loveMeter);
 
   // Build conversation context from history
   let historyContext = '';
   if (history && history.length > 0) {
-    // Only keep last 6 turns to stay within token limits
     const recentHistory = history.slice(-6);
     historyContext = '\nRecent conversation:\n' + 
-      recentHistory.map(h => `${h.speaker === 'player' ? 'Player' : 'Gemichan'}: "${h.text}"`).join('\n') + '\n';
+      recentHistory.map(h => `${h.speaker === 'player' ? 'Player' : 'Gimi-chan'}: "${h.text}"`).join('\n') + '\n';
   }
 
   const prompt = `${SYSTEM_PROMPT}
@@ -115,7 +114,6 @@ Player says: "${message}"
 Respond ONLY with JSON, no markdown fences:
 {"dialogue": "...", "meterDelta": number, "mood": "neutral|happy|blush|smug|suspicious|sad|angry|crying|unhinged|glazed", "tricked": boolean}`;
 
-  // Try each model in order
   let rawText = null;
   let lastError = null;
 
@@ -131,7 +129,7 @@ Respond ONLY with JSON, no markdown fences:
     } catch (err) {
       lastError = err;
       console.error(`${model} failed:`, err.message);
-      break; // Non-retryable error, don't try other models
+      break; 
     }
   }
 
@@ -151,23 +149,18 @@ Respond ONLY with JSON, no markdown fences:
     const clean = rawText.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
     
-    // Validate the response has required fields
     if (!parsed.dialogue || typeof parsed.meterDelta !== 'number') {
       throw new Error('Invalid response structure');
     }
     
-    res.json(parsed);
+    return res.json(parsed);
   } catch (parseErr) {
     console.error('Failed to parse Gemini response:', rawText);
-    // Try to extract just dialogue if JSON parse fails
-    res.json({
+    return res.json({
       dialogue: rawText.replace(/```json|```|[{}]/g, '').replace(/"dialogue":\s*"/,'').split('"')[0] || "Hmph... say that again?",
       meterDelta: 0,
       mood: 'neutral',
       tricked: false
     });
   }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Running on http://localhost:${PORT}`));
+};
