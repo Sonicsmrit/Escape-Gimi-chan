@@ -59,8 +59,19 @@ async function tryGeminiCall(model, prompt) {
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        temperature: 0.9,
-        maxOutputTokens: 256,
+        temperature: 0.95,
+        maxOutputTokens: 1024,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            dialogue: { type: "string", description: "The response dialogue spoken by Gimi-chan. Keep it short (1-2 sentences) and highly in character." },
+            meterDelta: { type: "integer", description: "How much affection changes, from -30 to 30." },
+            mood: { type: "string", enum: ["neutral", "happy", "blush", "smug", "suspicious", "sad", "angry", "crying", "unhinged", "glazed"] },
+            tricked: { type: "boolean", description: "True if the player successfully convinced Gimi-chan to let them escape." }
+          },
+          required: ["dialogue", "meterDelta", "mood", "tricked"]
+        }
       }
     })
   });
@@ -72,11 +83,9 @@ async function tryGeminiCall(model, prompt) {
     const errMsg = data.error.message || 'Unknown error';
     console.error(`[${model}] API error ${errCode}: ${errMsg.substring(0, 120)}`);
     
-    // If rate limited or quota exhausted, return null so we try next model
     if (errCode === 429 || errCode === 503) {
       return null;
     }
-    // For other errors (auth, bad request), throw immediately
     throw new Error(`API error ${errCode}: ${errMsg}`);
   }
 
@@ -94,7 +103,8 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message, loveMeter, history } = req.body;
+  const { message, loveMeter, history, playerName } = req.body;
+  const name = playerName || 'Player';
   const moodInfo = getMoodInfo(loveMeter);
 
   // Build conversation context from history
@@ -102,17 +112,15 @@ module.exports = async (req, res) => {
   if (history && history.length > 0) {
     const recentHistory = history.slice(-6);
     historyContext = '\nRecent conversation:\n' + 
-      recentHistory.map(h => `${h.speaker === 'player' ? 'Player' : 'Gimi-chan'}: "${h.text}"`).join('\n') + '\n';
+      recentHistory.map(h => `${h.speaker === 'player' ? name : 'Gimi-chan'}: "${h.text}"`).join('\n') + '\n';
   }
 
   const prompt = `${SYSTEM_PROMPT}
 
 Current love meter: ${loveMeter}/100 (${moodInfo.band}).
+Player's Name is "${name}". You must address them as "${name}".
 ${historyContext}
-Player says: "${message}"
-
-Respond ONLY with JSON, no markdown fences:
-{"dialogue": "...", "meterDelta": number, "mood": "neutral|happy|blush|smug|suspicious|sad|angry|crying|unhinged|glazed", "tricked": boolean}`;
+Player says: "${message}"`;
 
   let rawText = null;
   let lastError = null;
@@ -146,18 +154,12 @@ Respond ONLY with JSON, no markdown fences:
   }
 
   try {
-    const clean = rawText.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
-    
-    if (!parsed.dialogue || typeof parsed.meterDelta !== 'number') {
-      throw new Error('Invalid response structure');
-    }
-    
+    const parsed = JSON.parse(rawText.trim());
     return res.json(parsed);
   } catch (parseErr) {
     console.error('Failed to parse Gemini response:', rawText);
     return res.json({
-      dialogue: rawText.replace(/```json|```|[{}]/g, '').replace(/"dialogue":\s*"/,'').split('"')[0] || "Hmph... say that again?",
+      dialogue: "Hmph... say that again?",
       meterDelta: 0,
       mood: 'neutral',
       tricked: false

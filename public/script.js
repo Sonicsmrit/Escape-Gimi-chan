@@ -1,7 +1,8 @@
 const gameState = {
     screen: 'home',
     loveMeter: 50,
-    turnCount: 0
+    turnCount: 0,
+    playerName: 'Player'
 };
 
 // ─── WEB AUDIO ENGINE ───
@@ -15,29 +16,22 @@ const AudioEngine = (() => {
         return ctx;
     }
 
-    // Typing blip — short sine beep with slight pitch variation
     function playTypingBlip() {
         const c = getCtx();
         const osc = c.createOscillator();
         const gain = c.createGain();
-
         osc.type = 'sine';
-        // Random pitch in a cute high range for that VN feel
         osc.frequency.value = 420 + Math.random() * 180;
-
         gain.gain.setValueAtTime(0.06, c.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06);
-
         osc.connect(gain);
         gain.connect(c.destination);
         osc.start(c.currentTime);
         osc.stop(c.currentTime + 0.06);
     }
 
-    // Mood transition sounds
     function playMoodSound(mood) {
         const c = getCtx();
-
         const sounds = {
             happy: () => playChime(c, [523, 659, 784], 0.15, 'sine', 0.08),
             blush: () => playChime(c, [587, 740, 880], 0.18, 'sine', 0.06),
@@ -48,13 +42,11 @@ const AudioEngine = (() => {
             crying: () => playDescending(c, [523, 440, 349, 262], 0.18, 'sine', 0.05),
             unhinged: () => playDistorted(c, 0.1),
             glazed: () => playEerie(c, 0.06),
-            neutral: () => {} // no sound for neutral
+            neutral: () => {}
         };
-
         if (sounds[mood]) sounds[mood]();
     }
 
-    // Ascending chime (happy, blush)
     function playChime(c, notes, spacing, type, vol) {
         notes.forEach((freq, i) => {
             const osc = c.createOscillator();
@@ -64,14 +56,11 @@ const AudioEngine = (() => {
             const t = c.currentTime + i * spacing;
             gain.gain.setValueAtTime(vol, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(t);
-            osc.stop(t + 0.35);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(t); osc.stop(t + 0.35);
         });
     }
 
-    // Descending notes (sad, crying)
     function playDescending(c, notes, spacing, type, vol) {
         notes.forEach((freq, i) => {
             const osc = c.createOscillator();
@@ -81,14 +70,11 @@ const AudioEngine = (() => {
             const t = c.currentTime + i * spacing;
             gain.gain.setValueAtTime(vol, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(t);
-            osc.stop(t + 0.45);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(t); osc.stop(t + 0.45);
         });
     }
 
-    // Dissonant tension (suspicious)
     function playTension(c, freqs, dur, vol) {
         freqs.forEach(freq => {
             const osc = c.createOscillator();
@@ -97,14 +83,11 @@ const AudioEngine = (() => {
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(vol, c.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(c.currentTime);
-            osc.stop(c.currentTime + dur + 0.05);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(c.currentTime); osc.stop(c.currentTime + dur + 0.05);
         });
     }
 
-    // Harsh low rumble (angry)
     function playHarsh(c, freqs, dur, vol) {
         freqs.forEach(freq => {
             const osc = c.createOscillator();
@@ -113,14 +96,11 @@ const AudioEngine = (() => {
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(vol, c.currentTime);
             gain.gain.linearRampToValueAtTime(0, c.currentTime + dur);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(c.currentTime);
-            osc.stop(c.currentTime + dur + 0.05);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(c.currentTime); osc.stop(c.currentTime + dur + 0.05);
         });
     }
 
-    // Distorted chaos (unhinged)
     function playDistorted(c, vol) {
         for (let i = 0; i < 4; i++) {
             const osc = c.createOscillator();
@@ -130,14 +110,11 @@ const AudioEngine = (() => {
             const t = c.currentTime + i * 0.08;
             gain.gain.setValueAtTime(vol, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(t);
-            osc.stop(t + 0.15);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(t); osc.stop(t + 0.15);
         }
     }
 
-    // Eerie drone (glazed)
     function playEerie(c, vol) {
         [262, 277].forEach(freq => {
             const osc = c.createOscillator();
@@ -147,14 +124,11 @@ const AudioEngine = (() => {
             osc.frequency.linearRampToValueAtTime(freq - 10, c.currentTime + 0.8);
             gain.gain.setValueAtTime(vol, c.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.9);
-            osc.connect(gain);
-            gain.connect(c.destination);
-            osc.start(c.currentTime);
-            osc.stop(c.currentTime + 1);
+            osc.connect(gain); gain.connect(c.destination);
+            osc.start(c.currentTime); osc.stop(c.currentTime + 1);
         });
     }
 
-    // UI click
     function playClick() {
         const c = getCtx();
         const osc = c.createOscillator();
@@ -163,10 +137,8 @@ const AudioEngine = (() => {
         osc.frequency.value = 600;
         gain.gain.setValueAtTime(0.08, c.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.start(c.currentTime);
-        osc.stop(c.currentTime + 0.1);
+        osc.connect(gain); gain.connect(c.destination);
+        osc.start(c.currentTime); osc.stop(c.currentTime + 0.1);
     }
 
     return { playTypingBlip, playMoodSound, playClick };
@@ -185,7 +157,6 @@ function showScreen(id) {
 let currentTypingInterval = null;
 
 function typeText(el, text, speed = 30, withSound = true) {
-    // Cancel any ongoing typing
     if (currentTypingInterval) {
         clearInterval(currentTypingInterval);
         currentTypingInterval = null;
@@ -195,7 +166,6 @@ function typeText(el, text, speed = 30, withSound = true) {
         let i = 0;
         currentTypingInterval = setInterval(() => {
             el.textContent += text[i];
-            // Play typing blip for non-space characters
             if (withSound && text[i] !== ' ') {
                 AudioEngine.playTypingBlip();
             }
@@ -209,73 +179,7 @@ function typeText(el, text, speed = 30, withSound = true) {
     });
 }
 
-// ─── HOME → INTRO ───
-document.getElementById('btn-start').addEventListener('click', async () => {
-    AudioEngine.playClick();
-    showScreen('screen-intro');
-    const introText = document.getElementById('intro-text');
-    const continueBtn = document.getElementById('btn-intro-continue');
-    continueBtn.classList.add('hidden');
-
-    await typeText(
-        introText,
-        "You open your eyes. Fluorescent lights. Rows of empty desks. A classroom you don't recognize. The door creaks open."
-    );
-
-    continueBtn.classList.remove('hidden');
-});
-
-// ─── INTRO → CONFRONTATION ───
-document.getElementById('btn-intro-continue').addEventListener('click', async () => {
-    AudioEngine.playClick();
-    showScreen('screen-confrontation');
-    const confrontationText = document.getElementById('confrontation-text');
-    const continueBtn = document.getElementById('btn-confrontation-continue');
-    continueBtn.classList.add('hidden');
-
-    await typeText(
-        confrontationText,
-        "\"Oh good, you're finally awake.\" She smiles, holding up a set of keys. \"I locked the door myself. We're going to be together for a very long time.\""
-    );
-
-    continueBtn.classList.remove('hidden');
-});
-
-// ─── CONFRONTATION → DIALOGUE ───
-document.getElementById('btn-confrontation-continue').addEventListener('click', () => {
-    AudioEngine.playClick();
-    showScreen('screen-dialogue');
-    updateMeterDisplay();
-    const textEl = document.getElementById('gemichan-current-text');
-    const openingLine = "You're finally mine. ♡ So... what should we talk about first~?";
-    typeText(textEl, openingLine);
-    conversationHistory.push({ speaker: 'gemichan', text: openingLine });
-});
-
-// ─── DIALOGUE SYSTEM ───
-
-const conversationHistory = [];
-let currentMood = 'neutral';
-
-function addDialogueLine(speaker, text) {
-    const log = document.getElementById('dialogue-log');
-    const line = document.createElement('p');
-    line.classList.add('dialogue-line', speaker);
-    line.textContent = text;
-    log.appendChild(line);
-    log.scrollTop = log.scrollHeight;
-
-    conversationHistory.push({ speaker, text });
-
-    if (speaker === 'gemichan') {
-        const textEl = document.getElementById('gemichan-current-text');
-        typeText(textEl, text);
-    }
-}
-
-function updateMeterDisplay() {
-    document.getElementById('love-meter-fill').style.width = gameState.loveMeter + '%';
-}
+// ─── MOOD SPRITES ───
 
 const moodSprites = {
     neutral: '/assets/neutral.png',
@@ -290,15 +194,230 @@ const moodSprites = {
     glazed: '/assets/neutral glazed.png'
 };
 
+// ─── STORY SEQUENCE ───
+
+const introSequence = [
+    {
+        text: () => `You are ${gameState.playerName}, a normal high school student. Gimi-chan is the homeroom representative for your class. You never talked to her much. To you, she was just a quiet, diligent girl...`,
+    },
+    {
+        text: () => `But yesterday, she saw ${gameState.playerName} walking home with another girl. You didn't think anything of it. You didn't see the dark expression on Gimi-chan's face.`,
+    },
+    {
+        text: () => `Today, you woke up in a cold sweat. Fluorescent lights. Rows of empty desks. A classroom you don't recognize. Your hands are tied to a chair. The door creaks open...`,
+    }
+];
+
+const confrontationSequence = [
+    {
+        text: () => `"Oh good, ${gameState.playerName}, you're finally awake... don't try to escape, I have locked the doors myself and tied you up with love... we are going to be together now, my love <3"`,
+        sprite: 'neutral',
+        mood: 'neutral'
+    },
+    {
+        text: () => `"So... I have to ask you a question. Who was that girl you were walking with yesterday? Tell me, ${gameState.playerName}."`,
+        sprite: 'suspicious',
+        mood: 'suspicious',
+        showChoices: true
+    }
+];
+
+let introIndex = 0;
+let confrontationIndex = 0;
+
+async function runIntroStep() {
+    showScreen('screen-intro');
+    const step = introSequence[introIndex];
+    const el = document.getElementById('intro-text');
+    const btn = document.getElementById('btn-intro-continue');
+    btn.classList.add('hidden');
+    
+    await typeText(el, step.text());
+    btn.classList.remove('hidden');
+}
+
+async function runConfrontationStep() {
+    showScreen('screen-confrontation');
+    const step = confrontationSequence[confrontationIndex];
+    const textEl = document.getElementById('confrontation-text');
+    const nameEl = document.getElementById('confrontation-name');
+    const continueBtn = document.getElementById('btn-confrontation-continue');
+    const choiceContainer = document.getElementById('confrontation-choices');
+    const spriteEl = document.getElementById('gemichan-sprite-confrontation');
+    
+    continueBtn.classList.add('hidden');
+    choiceContainer.classList.add('hidden');
+    
+    if (step.sprite && moodSprites[step.sprite]) {
+        spriteEl.src = moodSprites[step.sprite];
+        applySpriteAnimation(spriteEl, step.mood || 'neutral');
+    }
+    if (step.mood) {
+        AudioEngine.playMoodSound(step.mood);
+    }
+    
+    nameEl.textContent = "Gimi-chan";
+    await typeText(textEl, step.text());
+    
+    if (step.showChoices) {
+        choiceContainer.classList.remove('hidden');
+    } else {
+        continueBtn.classList.remove('hidden');
+    }
+}
+
+function transitionToDialogue(lastReply) {
+    showScreen('screen-dialogue');
+    updateMeterDisplay();
+    
+    const sprite = document.getElementById('gemichan-sprite');
+    let matchedMood = 'neutral';
+    if (conversationHistory.length > 0) {
+        const lastMsg = conversationHistory[conversationHistory.length - 1];
+        if (lastMsg.text.includes("classmate")) matchedMood = 'blush';
+        else if (lastMsg.text.includes("girlfriend")) matchedMood = 'unhinged';
+        else if (lastMsg.text.includes("Lying")) matchedMood = 'suspicious';
+    }
+    sprite.src = moodSprites[matchedMood];
+    applySpriteAnimation(sprite, matchedMood);
+    currentMood = matchedMood;
+    
+    const textEl = document.getElementById('gemichan-current-text');
+    const openingLine = lastReply || "You're finally mine. ♡ So... what should we talk about first~?";
+    textEl.textContent = openingLine;
+}
+
+// ─── HOME → NAME ENTRY ───
+document.getElementById('btn-start').addEventListener('click', () => {
+    AudioEngine.playClick();
+    showScreen('screen-name');
+    document.getElementById('name-input').focus();
+});
+
+// ─── NAME ENTRY → INTRO ───
+document.getElementById('btn-name-confirm').addEventListener('click', () => {
+    AudioEngine.playClick();
+    const nameVal = document.getElementById('name-input').value.trim();
+    gameState.playerName = nameVal || 'Player';
+    introIndex = 0;
+    confrontationIndex = 0;
+    runIntroStep();
+});
+
+// Also allow Enter to confirm name
+document.getElementById('name-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('btn-name-confirm').click();
+    }
+});
+
+// ─── INTRO CONTINUE ───
+document.getElementById('btn-intro-continue').addEventListener('click', () => {
+    AudioEngine.playClick();
+    introIndex++;
+    if (introIndex < introSequence.length) {
+        runIntroStep();
+    } else {
+        confrontationIndex = 0;
+        runConfrontationStep();
+    }
+});
+
+// ─── CONFRONTATION CONTINUE ───
+document.getElementById('btn-confrontation-continue').addEventListener('click', () => {
+    AudioEngine.playClick();
+    confrontationIndex++;
+    if (confrontationIndex < confrontationSequence.length) {
+        runConfrontationStep();
+    } else {
+        transitionToDialogue();
+    }
+});
+
+// ─── CHOICE HANDLERS ───
+document.querySelectorAll('.btn-choice').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        AudioEngine.playClick();
+        const choice = e.currentTarget.getAttribute('data-choice');
+        const choiceContainer = document.getElementById('confrontation-choices');
+        choiceContainer.classList.add('hidden');
+        
+        const textEl = document.getElementById('confrontation-text');
+        const spriteEl = document.getElementById('gemichan-sprite-confrontation');
+        const continueBtn = document.getElementById('btn-confrontation-continue');
+        
+        let reply = "";
+        let mood = "neutral";
+        let sprite = "neutral";
+        
+        if (choice === 'classmate') {
+            gameState.loveMeter = 50;
+            mood = 'happy';
+            sprite = 'blush';
+            reply = `"A classmate? Working on a group project...? You looked... so close. But I guess I can believe you for now, ${gameState.playerName}... if you promise to only look at me from now on. ♡"`;
+        } else if (choice === 'girlfriend') {
+            gameState.loveMeter = 30;
+            mood = 'unhinged';
+            sprite = 'unhinged';
+            reply = `"Your girlfriend...? You belong to *me*, ${gameState.playerName}. I'll make sure you forget all about her! Let's see if she can save you now."`;
+        } else if (choice === 'directions') {
+            gameState.loveMeter = 40;
+            mood = 'suspicious';
+            sprite = 'suspicious';
+            reply = `"Lying to me already, ${gameState.playerName}? How cute... but I know you're lying. I know everything about you, darling."`;
+        }
+        
+        conversationHistory.push({ speaker: 'player', text: e.currentTarget.textContent });
+        conversationHistory.push({ speaker: 'gemichan', text: reply });
+        
+        spriteEl.src = moodSprites[sprite];
+        applySpriteAnimation(spriteEl, mood);
+        AudioEngine.playMoodSound(mood);
+        await typeText(textEl, reply);
+        
+        continueBtn.onclick = () => {
+            AudioEngine.playClick();
+            transitionToDialogue(reply);
+        };
+        continueBtn.classList.remove('hidden');
+    });
+});
+
+// ─── QUIT BUTTON ───
+document.getElementById('btn-quit').addEventListener('click', () => {
+    AudioEngine.playClick();
+    resetGame();
+});
+
+// ─── DIALOGUE SYSTEM ───
+
+const conversationHistory = [];
+let currentMood = 'neutral';
+
+function applySpriteAnimation(sprite, mood) {
+    // Remove all existing mood classes
+    sprite.className = sprite.className.replace(/\bmood-\S+/g, '').trim();
+    // Force reflow so re-adding same class restarts animation
+    void sprite.offsetWidth;
+    // Add new mood class
+    if (mood && mood !== 'neutral') {
+        sprite.classList.add(`mood-${mood}`);
+    }
+}
+
+function updateMeterDisplay() {
+    document.getElementById('love-meter-fill').style.width = gameState.loveMeter + '%';
+}
+
 function setGemichanMood(mood) {
     const sprite = document.getElementById('gemichan-sprite');
     if (sprite && moodSprites[mood]) {
-        // Play mood sound only if mood actually changed
         if (mood !== currentMood) {
             AudioEngine.playMoodSound(mood);
+            applySpriteAnimation(sprite, mood);
             currentMood = mood;
         }
-        // Subtle sprite transition
         sprite.style.opacity = '0.7';
         setTimeout(() => {
             sprite.src = moodSprites[mood];
@@ -308,13 +427,14 @@ function setGemichanMood(mood) {
 }
 
 async function callGemichan(playerMessage) {
-    const res = await fetch('/chat', {
+    const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             message: playerMessage,
             loveMeter: gameState.loveMeter,
-            history: conversationHistory.slice(-6)
+            history: conversationHistory.slice(-6),
+            playerName: gameState.playerName
         })
     });
     return res.json();
@@ -332,12 +452,10 @@ document.getElementById('dialogue-form').addEventListener('submit', async (e) =>
     const textEl = document.getElementById('gemichan-current-text');
     const nameEl = document.querySelector('#screen-dialogue .vn-name');
 
-    // Show player's message briefly
-    nameEl.textContent = 'You';
+    nameEl.textContent = gameState.playerName;
     nameEl.style.color = 'var(--parchment-dim)';
     textEl.textContent = message;
 
-    // Log it
     const log = document.getElementById('dialogue-log');
     const playerLine = document.createElement('p');
     playerLine.classList.add('dialogue-line', 'player');
@@ -350,7 +468,6 @@ document.getElementById('dialogue-form').addEventListener('submit', async (e) =>
     sendBtn.disabled = true;
     gameState.turnCount++;
 
-    // Thinking indicator after a beat
     setTimeout(() => {
         nameEl.textContent = 'Gimi-chan';
         nameEl.style.color = '';
@@ -366,7 +483,6 @@ document.getElementById('dialogue-form').addEventListener('submit', async (e) =>
         nameEl.style.color = '';
         textEl.style.opacity = '1';
 
-        // Log gemichan response
         const gemLine = document.createElement('p');
         gemLine.classList.add('dialogue-line', 'gemichan');
         gemLine.textContent = result.dialogue;
@@ -374,10 +490,7 @@ document.getElementById('dialogue-form').addEventListener('submit', async (e) =>
         log.scrollTop = log.scrollHeight;
         conversationHistory.push({ speaker: 'gemichan', text: result.dialogue });
 
-        // Set mood (plays sound if changed)
         setGemichanMood(result.mood || 'neutral');
-
-        // Type out the response with sound
         await typeText(textEl, result.dialogue);
 
         updateMeterDisplay();
@@ -417,7 +530,11 @@ function resetGame() {
         nameEl.style.color = '';
     }
     const sprite = document.getElementById('gemichan-sprite');
-    if (sprite) sprite.src = '/assets/neutral.png';
+    if (sprite) {
+        sprite.src = '/assets/neutral.png';
+        sprite.className = sprite.className.replace(/\bmood-\S+/g, '').trim();
+    }
+    document.getElementById('name-input').value = '';
     showScreen('screen-home');
 }
 

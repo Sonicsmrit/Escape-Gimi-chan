@@ -22,6 +22,17 @@
         </div>
     </section>
 
+    <!-- NAME ENTRY SCREEN -->
+    <section id="screen-name" class="screen">
+        <div class="home-wrap">
+            <div class="name-panel">
+                <p class="name-panel-title">♡ What's your name? ♡</p>
+                <input id="name-input" type="text" placeholder="Enter your name..." autocomplete="off" maxlength="20">
+                <button id="btn-name-confirm" class="btn-cute">Continue</button>
+            </div>
+        </div>
+    </section>
+
     <!-- Intro Cutscene -->
     <section id="screen-intro" class="screen">
         <div class="vn-scene">
@@ -38,9 +49,17 @@
     <section id="screen-confrontation" class="screen">
         <div class="vn-scene">
             <img id="gemichan-sprite-confrontation" src="/assets/neutral.png" alt="Gemichan" class="vn-sprite">
+            
+            <!-- Floating choices in the center -->
+            <div id="confrontation-choices" class="vn-choices hidden">
+                <button class="btn-cute btn-choice" data-choice="classmate">"She's just a classmate! We were working on a group project..."</button>
+                <button class="btn-cute btn-choice" data-choice="girlfriend">"She's my girlfriend. Why do you care?"</button>
+                <button class="btn-cute btn-choice" data-choice="directions">"She was asking for directions! I don't even know her!"</button>
+            </div>
+
             <div class="vn-textbox">
                 <div class="vn-textbox-inner">
-                    <span class="vn-name">Gimi-chan</span>
+                    <span id="confrontation-name" class="vn-name">Gimi-chan</span>
                     <p id="confrontation-text" class="vn-text"></p>
                     <button id="btn-confrontation-continue" class="btn-continue hidden">▼</button>
                 </div>
@@ -59,6 +78,9 @@
                 </div>
             </div>
 
+            <!-- Quit button -->
+            <button id="btn-quit" class="btn-quit" title="Quit to Menu">✕</button>
+
             <!-- Character sprite -->
             <img id="gemichan-sprite" src="/assets/neutral.png" alt="Gemichan" class="vn-sprite">
 
@@ -69,7 +91,7 @@
             <div class="vn-textbox dialogue-textbox">
                 <div class="vn-textbox-inner">
                     <span class="vn-name">Gimi-chan</span>
-                    <p id="gemichan-current-text" class="vn-text">Hey, I locked us in here so that you can be mine! ~<3</p>
+                    <p id="gemichan-current-text" class="vn-text"></p>
                 </div>
                 <form id="dialogue-form" class="dialogue-form">
                     <input id="player-input" type="text" placeholder="Say something to her..." autocomplete="off">
