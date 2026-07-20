@@ -511,9 +511,31 @@ document.getElementById('dialogue-form').addEventListener('submit', async (e) =>
 // ─── ENDINGS ───
 
 function checkEndingConditions(tricked) {
-    if (tricked) { showScreen('screen-ending-trick'); return; }
-    if (gameState.loveMeter >= 90) showScreen('screen-ending-good');
-    else if (gameState.loveMeter <= 10) showScreen('screen-ending-bad');
+    // Get last dialogue spoken by Gimi-chan
+    let lastGimiDialogue = "So... what do you want to talk about?";
+    for (let i = conversationHistory.length - 1; i >= 0; i--) {
+        if (conversationHistory[i].speaker === 'gemichan') {
+            lastGimiDialogue = conversationHistory[i].text;
+            break;
+        }
+    }
+
+    if (tricked) {
+        document.getElementById('ending-quote-trick').textContent = lastGimiDialogue;
+        document.getElementById('ending-desc-trick').textContent = `You talked your way out. Barely. Gimi-chan unlocked the door, but her eyes never left yours. You escaped, but you can feel her presence wherever you go...`;
+        showScreen('screen-ending-trick'); 
+        return; 
+    }
+    if (gameState.loveMeter >= 90) {
+        document.getElementById('ending-quote-good').textContent = lastGimiDialogue;
+        document.getElementById('ending-desc-good').textContent = `She trusted ${gameState.playerName} so she untied him, handed him the keys, and let him go... but she will be waiting for your visit tomorrow. ♡`;
+        showScreen('screen-ending-good');
+    }
+    else if (gameState.loveMeter <= 10) {
+        document.getElementById('ending-quote-bad').textContent = lastGimiDialogue;
+        document.getElementById('ending-desc-bad').textContent = `She didn't want her love to love anyone else, so she killed him herself. Some doors only open one way...`;
+        showScreen('screen-ending-bad');
+    }
 }
 
 function resetGame() {
