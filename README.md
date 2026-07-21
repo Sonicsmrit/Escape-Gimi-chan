@@ -90,3 +90,6 @@ Escape Gimi-chan/
 ├── .gitignore             
 └── README.md              
 ```
+---
+### Built for GABA hackathon
+
