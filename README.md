@@ -92,5 +92,5 @@ Escape Gimi-chan/
 ```
 ---
 ### Built for GABA hackathon
-> Winner of GABA hackathon
+Winner @ GABA Hackday Hackathon
 
